@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.xpi
+*.crx
+*.pem
+.DS_Store
+package-lock.json
+.gitattributes

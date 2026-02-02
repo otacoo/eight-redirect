@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "otacoo@eight-redirect.moe": {
+      "updates": [
+        {
+          "version": "1.0.1",
+          "update_link": "https://github.com/otacoo/eight-redirect/raw/refs/heads/main/dist/signed-xpi/eight-redirect.xpi"
+        }
+      ]
+    }
+  }
+}

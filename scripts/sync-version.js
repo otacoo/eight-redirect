@@ -1,0 +1,35 @@
+const fs = require('fs');
+const path = require('path');
+const pkg = require('../package.json');
+const root = path.join(__dirname, '..');
+const srcDir = path.join(root, 'src');
+const version = pkg.version;
+
+[path.join(srcDir, 'manifest.firefox.json'), path.join(srcDir, 'manifest.chrome.json')].forEach((filePath) => {
+  if (!fs.existsSync(filePath)) return;
+  const m = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  m.version = version;
+  fs.writeFileSync(filePath, JSON.stringify(m, null, 2));
+});
+
+const updatesJsonPath = path.join(root, 'updates.json');
+if (fs.existsSync(updatesJsonPath)) {
+  const data = JSON.parse(fs.readFileSync(updatesJsonPath, 'utf8'));
+  if (data.addons && typeof data.addons === 'object') {
+    for (const addon of Object.values(data.addons)) {
+      if (addon && Array.isArray(addon.updates) && addon.updates.length > 0) {
+        addon.updates[0].version = version;
+        break;
+      }
+    }
+    fs.writeFileSync(updatesJsonPath, JSON.stringify(data, null, 2));
+  }
+}
+
+const updatesXmlPath = path.join(root, 'updates.xml');
+if (fs.existsSync(updatesXmlPath)) {
+  let xml = fs.readFileSync(updatesXmlPath, 'utf8');
+  xml = xml.replace(/<\?xml version='[^']*'/, "<?xml version='1.0'");
+  xml = xml.replace(/(<updatecheck\s+[^>]*\s)version='[^']*'(\s*\/>)/, "$1version='" + version + "'$2");
+  fs.writeFileSync(updatesXmlPath, xml);
+}

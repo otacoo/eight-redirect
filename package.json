@@ -1,0 +1,17 @@
+{
+  "name": "eight-redirect",
+  "version": "1.0.1",
+  "description": "Redirect from one domain to another when the original doesn't respond in time (Chrome & Firefox)",
+  "scripts": {
+    "version:patch": "npm version patch --no-git-commit-version && node scripts/sync-version.js",
+    "version:minor": "npm version minor --no-git-commit-version && node scripts/sync-version.js",
+    "version:major": "npm version major --no-git-commit-version && node scripts/sync-version.js",
+    "pack": "node scripts/sync-version.js && node scripts/build.js",
+    "pack:firefox": "node scripts/sync-version.js && node scripts/build.js --firefox",
+    "pack:chrome": "node scripts/sync-version.js && node scripts/build.js --chrome"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "crx": "^5.0.1"
+  }
+}

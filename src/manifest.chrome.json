@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Eight Redirect",
+  "version": "1.0.1",
+  "description": "Redirect to a backup domain when the original doesn't respond in time",
+  "update_url": "https://raw.githubusercontent.com/otacoo/eight-redirect/main/updates.xml",
+  "icons": {
+    "16": "src/icons/16.png",
+    "48": "src/icons/48.png",
+    "128": "src/icons/128.png"
+  },
+  "permissions": [
+    "storage",
+    "webRequest",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Eight Redirect",
+    "default_icon": {
+      "16": "src/icons/16.png",
+      "48": "src/icons/48.png",
+      "128": "src/icons/128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

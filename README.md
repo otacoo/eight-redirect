@@ -1,15 +1,21 @@
-# <img width="48" height="48" alt="48" src="https://github.com/user-attachments/assets/2c664e48-3915-4290-b8e4-a668e6eb37e8" />  Eight Redirect
+# <img width="48" height="48" alt="48" src="https://github.com/user-attachments/assets/31977e95-8b13-4fe2-bfdc-961d0fc7f9cf" /> Eight Redirect
 
 A small Chrome and Firefox extension that redirects to a backup domain when the original doesn't respond within a set time.\
 Has options to backup localStorage when a redirect happens and to restore from backup manually.
 
-
 ## Features
 
-- **3 seconds grace**: If a domain doesn't respond within 3 seconds, the extension checks it; if there's no response, redirects to the paired domain.
+- **Grace Period**: If a domain doesn't respond within X seconds, the extension checks it; if there's no response, redirects to the paired domain.
 - **Domain Pairs**: Add pairs of domains (e.g. `example.org` ↔ `example.com`). Path is preserved. No redirect loop.
 - **LocalStorage Backup**: When a redirect happens (e.g. site.com down → site.org), the extension can save a backup of the target page’s localStorage. 
 - **Restore from Backup**: applies the backup on the next visit to either domain (manual button).
+
+#### Options
+![Screenshot](https://github.com/user-attachments/assets/b56806fe-2fe6-4c6f-b20d-287379ada581)
+
+#### Toolbar Icon
+![icon](https://github.com/user-attachments/assets/a669e192-f225-4362-88ae-cf6307deb36b)
+
 
 
 ## Installation
@@ -52,8 +58,8 @@ Here's what each part does:
 Requires `npm`.
 
 ```bash
-npm install
-npm run pack
+npm install # install node packages
+npm run pack # build extension
 ```
 
 - **`npm run pack:firefox`** – only Firefox (dist/firefox, dist/signed-xpi folder, firefox zip)

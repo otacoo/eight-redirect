@@ -33,3 +33,29 @@ if (fs.existsSync(updatesXmlPath)) {
   xml = xml.replace(/(<updatecheck\s+[^>]*\s)version='[^']*'(\s*\/>)/, "$1version='" + version + "'$2");
   fs.writeFileSync(updatesXmlPath, xml);
 }
+
+const changelogPath = path.join(root, 'CHANGELOG.md');
+const date = new Date().toISOString().slice(0, 10);
+const newEntry = `## [${version}] - ${date}\n- Update details here.\n\n`;
+
+let oldContent;
+if (fs.existsSync(changelogPath)) {
+  oldContent = fs.readFileSync(changelogPath, 'utf8');
+} else {
+  oldContent = '# Changelog\n\n';
+}
+
+if (!oldContent.includes(`## [${version}]`)) {
+  let newContent;
+  if (oldContent.startsWith('# Changelog')) {
+    const idx = oldContent.indexOf('\n\n');
+    if (idx !== -1) {
+      newContent = oldContent.slice(0, idx) + '\n\n' + newEntry + oldContent.slice(idx + 2);
+    } else {
+      newContent = oldContent + '\n\n' + newEntry;
+    }
+  } else {
+    newContent = '# Changelog\n\n' + newEntry + oldContent;
+  }
+  fs.writeFileSync(changelogPath, newContent);
+}

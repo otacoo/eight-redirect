@@ -3,7 +3,7 @@
     "otacoo@eight-redirect.moe": {
       "updates": [
         {
-          "version": "1.0.1",
+          "version": "1.0.2",
           "update_link": "https://github.com/otacoo/eight-redirect/raw/refs/heads/main/dist/signed-xpi/eight-redirect.xpi"
         }
       ]

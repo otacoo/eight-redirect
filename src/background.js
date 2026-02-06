@@ -12,6 +12,7 @@ const browser = typeof chrome !== 'undefined' ? chrome : typeof browser !== 'und
 let cachedRules = [];
 
 const gracePending = {};
+const lastRequestUrlByTab = {};
 
 function normalizeHost(host) {
   return (host || '').replace(/^www\./, '').toLowerCase();
@@ -79,6 +80,7 @@ function redirectAfterGrace(tabId, pair, showCheckPage) {
     const current = (tab.url || '').split('#')[0];
     const originalNorm = (pair.original || '').split('#')[0];
     if (tab.status === 'complete' && current === originalNorm) return;
+    if (tab.status === 'complete' && isSameHost(current, pair.original)) return;
     browser.tabs.update(tabId, { url: buildCheckUrl(pair.original, pair.backup, showCheckPage) });
   });
 }
@@ -97,16 +99,24 @@ function scheduleGrace(tabId, pair, showCheckPage, graceMs) {
   gracePending[tabId] = { pair, timeoutId };
 }
 
-function maybeScheduleGrace(tabId, requestUrl, pair) {
+function maybeScheduleGrace(tabId, requestUrl, pair, previousRequestUrl) {
   browser.tabs.get(tabId, (tab) => {
-    if (browser.runtime.lastError || !tab || !tab.url) {
+    const hasTabUrl = !browser.runtime.lastError && tab && tab.url;
+    if (!hasTabUrl) {
+      if (previousRequestUrl && isSameHost(previousRequestUrl, requestUrl)) {
+        clearGrace(tabId);
+        return;
+      }
       browser.storage.local.get(['graceMs', 'showCheckPage'], (data) => {
         const showCheckPage = data.showCheckPage !== false;
         scheduleGrace(tabId, pair, showCheckPage, getGraceMsFromStorage(data));
       });
       return;
     }
-    if (isSameHost(tab.url, requestUrl)) return;
+    if (isSameHost(tab.url, requestUrl)) {
+      clearGrace(tabId);
+      return;
+    }
     browser.storage.local.get(['graceMs', 'showCheckPage'], (data) => {
       const showCheckPage = data.showCheckPage !== false;
       scheduleGrace(tabId, pair, showCheckPage, getGraceMsFromStorage(data));
@@ -120,20 +130,27 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   if (changes.rules) loadCache();
 });
 
-browser.tabs.onRemoved.addListener((tabId) => { clearGrace(tabId); });
+browser.tabs.onRemoved.addListener((tabId) => {
+  clearGrace(tabId);
+  delete lastRequestUrlByTab[tabId];
+});
 
 browser.webRequest.onBeforeRequest.addListener(
   (details) => {
     if (details.type !== 'main_frame' || details.tabId === -1) return;
-    let pair = getRedirectForUrlSync(details.url);
+    const tabId = details.tabId;
+    const requestUrl = details.url;
+    let pair = getRedirectForUrlSync(requestUrl);
+    const previousRequestUrl = lastRequestUrlByTab[tabId];
+    if (pair) lastRequestUrlByTab[tabId] = requestUrl;
     if (pair) {
-      maybeScheduleGrace(details.tabId, details.url, pair);
+      maybeScheduleGrace(tabId, requestUrl, pair, previousRequestUrl);
       return;
     }
     loadCache();
     browser.storage.local.get(['rules', 'graceMs', 'showCheckPage'], (data) => {
       const rules = data.rules || [];
-      const u = new URL(details.url);
+      const u = new URL(requestUrl);
       if (u.searchParams.has(REDIRECT_MARKER) || u.hash.includes(REDIRECT_MARKER)) return;
       const host = normalizeHost(u.hostname);
       for (const r of rules) {
@@ -144,8 +161,9 @@ browser.webRequest.onBeforeRequest.addListener(
         const otherHost = domains[idx === 0 ? 1 : 0];
         if (!otherHost) continue;
         const backupUrl = `${u.protocol}//${otherHost}${u.pathname}${u.search}${u.hash}`;
-        pair = { original: details.url, backup: backupUrl };
-        maybeScheduleGrace(details.tabId, details.url, pair);
+        pair = { original: requestUrl, backup: backupUrl };
+        lastRequestUrlByTab[tabId] = requestUrl;
+        maybeScheduleGrace(tabId, requestUrl, pair, previousRequestUrl);
         break;
       }
     });

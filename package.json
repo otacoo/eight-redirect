@@ -1,6 +1,6 @@
 {
   "name": "eight-redirect",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Redirect from one domain to another when the original doesn't respond in time (Chrome & Firefox)",
   "scripts": {
     "version:patch": "npm version patch --no-git-commit-version && node scripts/sync-version.js",
